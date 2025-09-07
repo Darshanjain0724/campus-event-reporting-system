@@ -9,6 +9,8 @@ Sqlite is very easy and can be easily implmented using python,we would use sqlit
 
 I would build a system which to track and analyse the campus events and participation.
 
+*Finally generates reports such as event popularity and student participation.*
+
 #### *I would also concentrate on analytics and reporting capablities of the project.*
 
 ## Funtionalitys
@@ -18,8 +20,15 @@ I would concentrate on the core funtionalities like:
 2. Student Registration.
 3. attendence Tracking.
 4. Feedback Collection.
-
 5. Also making sure that the UI is very simple and can be easily navigated.
+
+## Prototyping 
+
+Using FastAPI with SQLite, we implemented the prototype.
+
+## Reporting and Output
+
+SQL queries were written for event popularity, participation, feedback scores and tested on sample data. Screenshots of the outputs were captured for submission.
 
 ## Whether I follow and Deviate from AI Suggestions:
 •	I really love how ChatGPT comes up with a well-executable plan, and the assumptions were all the necessary things which we should keep in mind while creating a project of this sort.
