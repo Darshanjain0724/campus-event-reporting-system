@@ -7,6 +7,7 @@ A comprehensive FastAPI-based system for managing campus events, student registr
 ![SQLite](https://img.shields.io/badge/SQLite-3-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
+## This is not my observations, PLEASE VISIT README_Myobservation.md
 ## 🌟 Features
 
 ### 🎯 Core Functionality
