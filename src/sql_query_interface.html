@@ -146,6 +146,62 @@
             margin-bottom: 20px;
         }
 
+        .sample-queries-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .query-navigation {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-width: 100px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+
+        .query-counter {
+            background: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            color: #667eea;
+            border: 2px solid #667eea;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .sample-query-container {
+            position: relative;
+        }
+
         .sample-query {
             background: white;
             border: 1px solid #e0e0e0;
@@ -469,66 +525,25 @@
                     <h2 class="section-title">📝 Write Your SQL Query</h2>
                 
                 <div class="sample-queries">
-                    <h3>💡 Sample Queries (Click to Use)</h3>
+                    <div class="sample-queries-header">
+                        <h3>💡 Sample Queries (Click to Use)</h3>
+                        <div class="query-navigation">
+                            <button class="nav-btn nav-btn-left" onclick="previousQuery()" id="prevBtn">◀ Previous</button>
+                            <span class="query-counter" id="queryCounter">1 of 8</span>
+                            <button class="nav-btn nav-btn-right" onclick="nextQuery()" id="nextBtn">Next ▶</button>
+                        </div>
+                    </div>
                     
-                    <div class="sample-query" onclick="loadSampleQuery(1)">
-                        <h4>1. Total Registrations per Event</h4>
-                        <pre>SELECT e.id, e.title, COUNT(r.id) AS registrations
+                    <div class="sample-query-container">
+                        <div class="sample-query" id="currentQuery" onclick="loadCurrentQuery()">
+                            <h4 id="queryTitle">1. Total Registrations per Event</h4>
+                            <pre id="queryCode">SELECT e.id, e.title, COUNT(r.id) AS registrations
 FROM events e
 LEFT JOIN registrations r ON r.event_id = e.id
 WHERE e.college_id = 1
 GROUP BY e.id, e.title
 ORDER BY registrations DESC;</pre>
-                    </div>
-
-                    <div class="sample-query" onclick="loadSampleQuery(2)">
-                        <h4>2. Attendance Percentage per Event</h4>
-                        <pre>SELECT e.id, e.title,
-  COUNT(a.id) AS present,
-  COUNT(r.id) AS registered,
-  CASE WHEN COUNT(r.id)=0 THEN 0
-       ELSE ROUND(100.0 * COUNT(a.id) / COUNT(r.id), 2) END AS attendance_pct
-FROM events e
-LEFT JOIN registrations r ON r.event_id = e.id
-LEFT JOIN attendance a ON a.event_id = e.id AND a.student_id = r.student_id
-WHERE e.college_id = 1
-GROUP BY e.id, e.title
-ORDER BY attendance_pct DESC;</pre>
-                    </div>
-
-                    <div class="sample-query" onclick="loadSampleQuery(3)">
-                        <h4>3. Average Feedback Score</h4>
-                        <pre>SELECT e.id, e.title, ROUND(AVG(f.rating), 2) AS avg_rating, COUNT(f.id) AS feedback_count
-FROM events e
-LEFT JOIN feedback f ON f.event_id = e.id
-WHERE e.college_id = 1
-GROUP BY e.id, e.title
-ORDER BY avg_rating DESC;</pre>
-                    </div>
-
-                    <div class="sample-query" onclick="loadSampleQuery(4)">
-                        <h4>4. Top 3 Most Active Students</h4>
-                        <pre>SELECT s.id, s.name, s.email, COUNT(a.id) AS attended_events
-FROM students s
-JOIN attendance a ON a.student_id = s.id
-WHERE s.college_id = 1
-GROUP BY s.id, s.name, s.email
-ORDER BY attended_events DESC
-LIMIT 3;</pre>
-                    </div>
-
-                    <div class="sample-query" onclick="loadSampleQuery(5)">
-                        <h4>5. College Summary Statistics</h4>
-                        <pre>SELECT 
-    COUNT(DISTINCT e.id) AS total_events,
-    COUNT(DISTINCT r.id) AS total_registrations,
-    COUNT(DISTINCT a.id) AS total_attendance,
-    COUNT(DISTINCT f.id) AS total_feedback
-FROM events e
-LEFT JOIN registrations r ON r.event_id = e.id
-LEFT JOIN attendance a ON a.event_id = e.id
-LEFT JOIN feedback f ON f.event_id = e.id
-WHERE e.college_id = 1;</pre>
+                        </div>
                     </div>
                 </div>
 
@@ -570,16 +585,20 @@ WHERE e.college_id = 1;</pre>
     <script>
         const API_BASE_URL = 'http://localhost:8000';
         
-        // Sample queries
+        // Sample queries with titles
         const sampleQueries = [
-            `SELECT e.id, e.title, COUNT(r.id) AS registrations
+            {
+                title: "1. Total Registrations per Event",
+                query: `SELECT e.id, e.title, COUNT(r.id) AS registrations
 FROM events e
 LEFT JOIN registrations r ON r.event_id = e.id
 WHERE e.college_id = 1
 GROUP BY e.id, e.title
-ORDER BY registrations DESC;`,
-            
-            `SELECT e.id, e.title,
+ORDER BY registrations DESC;`
+            },
+            {
+                title: "2. Attendance Percentage per Event",
+                query: `SELECT e.id, e.title,
   COUNT(a.id) AS present,
   COUNT(r.id) AS registered,
   CASE WHEN COUNT(r.id)=0 THEN 0
@@ -589,24 +608,30 @@ LEFT JOIN registrations r ON r.event_id = e.id
 LEFT JOIN attendance a ON a.event_id = e.id AND a.student_id = r.student_id
 WHERE e.college_id = 1
 GROUP BY e.id, e.title
-ORDER BY attendance_pct DESC;`,
-            
-            `SELECT e.id, e.title, ROUND(AVG(f.rating), 2) AS avg_rating, COUNT(f.id) AS feedback_count
+ORDER BY attendance_pct DESC;`
+            },
+            {
+                title: "3. Average Feedback Score",
+                query: `SELECT e.id, e.title, ROUND(AVG(f.rating), 2) AS avg_rating, COUNT(f.id) AS feedback_count
 FROM events e
 LEFT JOIN feedback f ON f.event_id = e.id
 WHERE e.college_id = 1
 GROUP BY e.id, e.title
-ORDER BY avg_rating DESC;`,
-            
-            `SELECT s.id, s.name, s.email, COUNT(a.id) AS attended_events
+ORDER BY avg_rating DESC;`
+            },
+            {
+                title: "4. Top 3 Most Active Students",
+                query: `SELECT s.id, s.name, s.email, COUNT(a.id) AS attended_events
 FROM students s
 JOIN attendance a ON a.student_id = s.id
 WHERE s.college_id = 1
 GROUP BY s.id, s.name, s.email
 ORDER BY attended_events DESC
-LIMIT 3;`,
-            
-            `SELECT 
+LIMIT 3;`
+            },
+            {
+                title: "5. College Summary Statistics",
+                query: `SELECT 
     COUNT(DISTINCT e.id) AS total_events,
     COUNT(DISTINCT r.id) AS total_registrations,
     COUNT(DISTINCT a.id) AS total_attendance,
@@ -616,7 +641,98 @@ LEFT JOIN registrations r ON r.event_id = e.id
 LEFT JOIN attendance a ON a.event_id = e.id
 LEFT JOIN feedback f ON f.event_id = e.id
 WHERE e.college_id = 1;`
+            },
+            {
+                title: "6. Events with Low Attendance",
+                query: `SELECT e.title, 
+       COUNT(r.id) as registered,
+       COUNT(a.id) as attended,
+       ROUND(100.0 * COUNT(a.id) / COUNT(r.id), 2) as attendance_pct
+FROM events e
+LEFT JOIN registrations r ON r.event_id = e.id
+LEFT JOIN attendance a ON a.event_id = e.id AND a.student_id = r.student_id
+WHERE e.college_id = 1
+GROUP BY e.id, e.title
+HAVING attendance_pct < 50
+ORDER BY attendance_pct ASC;`
+            },
+            {
+                title: "7. Recent Events (Last 30 days)",
+                query: `SELECT e.title, e.start_time, e.location,
+       COUNT(r.id) as registrations,
+       COUNT(a.id) as attendance
+FROM events e
+LEFT JOIN registrations r ON r.event_id = e.id
+LEFT JOIN attendance a ON a.event_id = e.id
+WHERE e.start_time >= datetime('now', '-30 days')
+GROUP BY e.id, e.title, e.start_time, e.location
+ORDER BY e.start_time DESC;`
+            },
+            {
+                title: "8. Student Participation by College",
+                query: `SELECT c.name as college_name,
+       COUNT(DISTINCT s.id) as total_students,
+       COUNT(DISTINCT r.id) as total_registrations,
+       COUNT(DISTINCT a.id) as total_attendance
+FROM colleges c
+LEFT JOIN students s ON s.college_id = c.id
+LEFT JOIN registrations r ON r.student_id = s.id
+LEFT JOIN attendance a ON a.student_id = s.id
+GROUP BY c.id, c.name
+ORDER BY total_attendance DESC;`
+            }
         ];
+
+        // Current query index
+        let currentQueryIndex = 0;
+
+        // Navigation functions
+        function nextQuery() {
+            if (currentQueryIndex < sampleQueries.length - 1) {
+                currentQueryIndex++;
+                updateQueryDisplay();
+            }
+        }
+
+        function previousQuery() {
+            if (currentQueryIndex > 0) {
+                currentQueryIndex--;
+                updateQueryDisplay();
+            }
+        }
+
+        function updateQueryDisplay() {
+            const queryTitle = document.getElementById('queryTitle');
+            const queryCode = document.getElementById('queryCode');
+            const queryCounter = document.getElementById('queryCounter');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            const currentQuery = sampleQueries[currentQueryIndex];
+            
+            queryTitle.textContent = currentQuery.title;
+            queryCode.textContent = currentQuery.query;
+            queryCounter.textContent = `${currentQueryIndex + 1} of ${sampleQueries.length}`;
+
+            // Update button states
+            prevBtn.disabled = currentQueryIndex === 0;
+            nextBtn.disabled = currentQueryIndex === sampleQueries.length - 1;
+        }
+
+        function loadCurrentQuery() {
+            const queryInput = document.getElementById('queryInput');
+            queryInput.value = sampleQueries[currentQueryIndex].query;
+        }
+
+        // Legacy function for backward compatibility
+        function loadSampleQuery(index) {
+            currentQueryIndex = index - 1;
+            updateQueryDisplay();
+            loadCurrentQuery();
+        }
+
+        // Initialize the display
+        updateQueryDisplay();
 
         // Check API status on load
         window.addEventListener('load', function() {
@@ -835,10 +951,21 @@ WHERE e.college_id = 1;`
             document.getElementById('resultsSection').style.display = 'none';
         }
 
-        // Add keyboard shortcut for executing query (Ctrl+Enter)
-        document.getElementById('queryInput').addEventListener('keydown', function(e) {
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Execute query with Ctrl+Enter
             if (e.ctrlKey && e.key === 'Enter') {
                 executeQuery();
+            }
+            // Navigate queries with arrow keys (when not typing in textarea)
+            else if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    previousQuery();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    nextQuery();
+                }
             }
         });
 
