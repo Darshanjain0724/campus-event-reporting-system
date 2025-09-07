@@ -6,7 +6,7 @@ This document contains the complete conversation log between the developer and A
 **Date**: September 2024  
 **Project**: Campus Event Reporting System  
 **AI Assistant**: Claude (Anthropic)  
-**Developer**: [Your Name]  
+**Developer**: Darshan A Jain
 **Objective**: Design and prototype a comprehensive campus event management system with web-based SQL interface
 
 ---
